@@ -1,5 +1,7 @@
 FROM ubuntu:12.04
 ENV ENVIRONMENT docker
+RUN usermod -u 1000 www-data && groupmod -g 1000 www-data
+RUN apt-get update && apt-get install -y apt-transport-https
 RUN apt-get update && \
     apt-get install -y software-properties-common && \
     apt-get update -y --force-yes && \
@@ -28,15 +30,4 @@ RUN apt-get update && \
 
 RUN sed -i "s/short_open_tag = Off/short_open_tag = On/" /etc/php5/apache2/php.ini
 RUN sed -i "s/error_reporting = .*$/error_reporting = E_ERROR | E_WARNING | E_PARSE/" /etc/php5/apache2/php.ini
-RUN cd /tmp && curl -sS https://getcomposer.org/installer | php && mv composer.phar /usr/local/bin/composer
-RUN echo "xdebug.remote_enable=on" >> /etc/php5/cli/conf.d/20-xdebug.ini \
-    && echo "xdebug.remote_autostart=off" >> /etc/php5/cli/conf.d/20-xdebug.ini \
-    && echo "xdebug.remote_handler=dbgp" >> /etc/php5/cli/conf.d/20-xdebug.ini \
-    && echo "xdebug.remote_port=${XDEBUG_REMOTE_PORT}" >> /etc/php5/cli/conf.d/20-xdebug.ini \
-    && echo "xdebug.idekey=${XDEBUG_IDEKEY}" >> /etc/php5/cli/conf.d/20-xdebug.ini \
-    && echo "xdebug.max_nesting_level=${XDEBUG_MAX_NESTING_LEVEL}" >> /etc/php5/cli/conf.d/20-xdebug.ini \
-    && echo "xdebug.remote_connect_back=off" >> /etc/php5/cli/conf.d/20-xdebug.ini \
-    && echo "xdebug.remote_host=${XDEBUG_IP_ADDRESS}" >> /etc/php5/cli/conf.d/20-xdebug.ini \
-    && echo "xdebug.remote_log=${XDEBUG_REMOTE_LOG}" >> /etc/php5/cli/conf.d/20-xdebug.ini
-
-RUN export XDEBUG_CONFIG="remote_enable=on remote_autostart=off remote_handler=dbgp remote_connect_back=off remote_port=${XDEBUG_REMOTE_PORT} show_local_vars=on max_nesting_level=${XDEBUG_MAX_NESTING_LEVEL} remote_log=${XDEBUG_REMOTE_LOG} remote_host=${XDEBUG_IP_ADDRESS} xdebug.idekey=${XDEBUG_IDEKEY}"
+RUN php -r "readfile('https://getcomposer.org/installer');" | php -- --install-dir=/usr/local/bin --filename=composer
